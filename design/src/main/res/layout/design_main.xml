@@ -149,5 +149,16 @@
                     app:text="@string/about" />
             </LinearLayout>
         </ScrollView>
+
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="返回"
+            android:textSize="20sp"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="@android:color/white"
+            android:layout_gravity="bottom|start"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

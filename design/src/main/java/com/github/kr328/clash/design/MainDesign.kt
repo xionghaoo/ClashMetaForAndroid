@@ -1,8 +1,10 @@
 package com.github.kr328.clash.design
 
+import android.app.Activity
 import android.content.Context
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.core.util.trafficTotal
 import com.github.kr328.clash.design.databinding.DesignAboutBinding
@@ -83,6 +85,12 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
 
         binding.colorClashStarted = context.resolveThemedColor(com.google.android.material.R.attr.colorPrimary)
         binding.colorClashStopped = context.resolveThemedColor(R.attr.colorClashStopped)
+
+        binding.btnBack.setOnClickListener {
+            if (context is AppCompatActivity) {
+                context.onBackPressedDispatcher.onBackPressed()
+            }
+        }
     }
 
     fun request(request: Request) {
