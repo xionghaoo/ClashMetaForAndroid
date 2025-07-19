@@ -1,8 +1,14 @@
 package com.github.kr328.clash
 
 import android.app.Activity
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.Environment
+import android.os.IBinder
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import com.github.kr328.clash.common.constants.Intents
@@ -23,14 +29,14 @@ import java.util.*
 import com.github.kr328.clash.design.R
 
 class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Log.d("ExternalControlActivity", "action: ${intent.action}")
         when(intent.action) {
             Intent.ACTION_VIEW -> {
                 val uri = intent.data ?: return finish()
                 val url = uri.getQueryParameter("url") ?: return finish()
-
                 launch {
                     val uuid = withProfile {
                         val type = when (uri.getQueryParameter("type")?.lowercase(Locale.getDefault())) {
@@ -69,8 +75,30 @@ class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
             else {
                 Toast.makeText(this, R.string.external_control_stopped, Toast.LENGTH_LONG).show()
             }
+
+            Intents.ACTION_STOP_CLASH_BACKGROUND -> {
+                val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
+                if (isRunning) {
+                    stopClash()
+                } else {
+                    Toast.makeText(this, R.string.external_control_stopped, Toast.LENGTH_LONG).show()
+                }
+            }
+            Intents.ACTION_STATUS -> {
+                val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
+                setResult(1, Intent().apply {
+                    putExtra("clashRunning", isRunning)
+                })
+                Log.d("ExternalControlActivity", "status query: $isRunning")
+            }
         }
+        Log.d("ExternalControlActivity", "activity finish")
         return finish()
+    }
+
+    override fun onDestroy() {
+        Log.d("ExternalControlActivity", "activity onDestroy")
+        super.onDestroy()
     }
 
     private fun startClash() {

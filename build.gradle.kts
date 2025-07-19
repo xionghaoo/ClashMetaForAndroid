@@ -33,6 +33,7 @@ subprojects {
 
     extensions.configure<BaseExtension> {
         buildFeatures.buildConfig = true
+        buildFeatures.aidl = true
         defaultConfig {
             if (isApp) {
                 applicationId = "com.github.metacubex.clash"

@@ -18,6 +18,9 @@ class StatusProvider : ContentProvider() {
                 else
                     null
             }
+            METHOD_QUERY_STATUS -> return Bundle().apply {
+                putBoolean("status", serviceRunning)
+            }
             else -> super.call(method, arg, extras)
         }
     }
@@ -59,6 +62,7 @@ class StatusProvider : ContentProvider() {
 
     companion object {
         const val METHOD_CURRENT_PROFILE = "currentProfile"
+        const val METHOD_QUERY_STATUS = "queryStatus"
 
         private const val CLASH_SERVICE_RUNNING_FILE = "service_running.lock"
 

@@ -59,7 +59,7 @@ afterEvaluate {
 
     tasks.forEach {
         if (it.name.startsWith("assemble")) {
-            it.dependsOn(downloadGeoFilesTask)
+//            it.dependsOn(downloadGeoFilesTask)
         }
     }
 }
