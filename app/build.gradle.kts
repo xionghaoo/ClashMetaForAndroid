@@ -40,12 +40,12 @@ task("downloadGeoFiles") {
         // "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/country.mmdb" to "country.mmdb",
         "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb" to "ASN.mmdb",
     )
-
     doLast {
         geoFilesUrls.forEach { (downloadUrl, outputFileName) ->
             val url = URL(downloadUrl)
             val outputPath = file("$geoFilesDownloadDir/$outputFileName")
             outputPath.parentFile.mkdirs()
+            if (outputPath.exists()) return@forEach
             url.openStream().use { input ->
                 Files.copy(input, outputPath.toPath(), StandardCopyOption.REPLACE_EXISTING)
                 println("$outputFileName downloaded to $outputPath")
@@ -59,7 +59,7 @@ afterEvaluate {
 
     tasks.forEach {
         if (it.name.startsWith("assemble")) {
-//            it.dependsOn(downloadGeoFilesTask)
+            it.dependsOn(downloadGeoFilesTask)
         }
     }
 }

@@ -1,21 +1,14 @@
 package com.github.kr328.clash
 
 import android.app.Activity
-import android.content.ComponentName
-import android.content.Context
+import android.app.ComponentCaller
 import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.Environment
-import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import com.github.kr328.clash.common.constants.Intents
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.common.util.setUUID
-import com.github.kr328.clash.design.MainDesign
-import com.github.kr328.clash.design.ui.ToastDuration
 import com.github.kr328.clash.remote.Remote
 import com.github.kr328.clash.remote.StatusClient
 import com.github.kr328.clash.service.model.Profile
@@ -27,8 +20,12 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import java.util.*
 import com.github.kr328.clash.design.R
+import com.github.kr328.clash.design.store.UiStore
 
 class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
+
+//    private var isShowVpnAuthDialog = 0
+    private var startSuccess = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,22 +72,21 @@ class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
             else {
                 Toast.makeText(this, R.string.external_control_stopped, Toast.LENGTH_LONG).show()
             }
-
-            Intents.ACTION_START_CLASH_BACKGROUND -> {
-                val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
-                if (!isRunning) {
-                    startClash()
-                } else {
-                    Toast.makeText(this, R.string.external_control_started, Toast.LENGTH_LONG).show()
-                }
-            }
+//            Intents.ACTION_START_CLASH_BACKGROUND -> {
+//
+//            }
             Intents.ACTION_STOP_CLASH_BACKGROUND -> {
                 val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
-                if (isRunning) {
+                val result = if (isRunning) {
                     stopClash()
+                    true
                 } else {
                     Toast.makeText(this, R.string.external_control_stopped, Toast.LENGTH_LONG).show()
+                    false
                 }
+                setResult(3, Intent().apply {
+                    putExtra("success", result)
+                })
             }
             Intents.ACTION_STATUS -> {
                 val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
@@ -101,15 +97,81 @@ class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
             }
         }
         Log.d("ExternalControlActivity", "activity finish")
-        return finish()
+        if (intent.action == Intents.ACTION_START_CLASH_BACKGROUND) {
+            val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
+            if (!isRunning) {
+//                isShowVpnAuthDialog = 1
+                startClashBackground()
+            } else {
+                Toast.makeText(this, R.string.external_control_started, Toast.LENGTH_LONG).show()
+                setStartResult(false)
+            }
+        } else {
+            return finish()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("ExternalControlActivity", "onResume: ")
+//        if (isShowVpnAuthDialog == 2 && !startSuccess) {
+//            finish()
+//        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("ExternalControlActivity", "onPause: ")
+//        if (isShowVpnAuthDialog == 1) {
+//            isShowVpnAuthDialog = 2
+//            // 显示授权弹窗
+//        }
     }
 
     override fun onDestroy() {
-        Log.d("ExternalControlActivity", "activity onDestroy")
         super.onDestroy()
     }
 
-    private fun startClash() {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d("ExternalControlActivity", "onActivityResult: $requestCode, ${resultCode}")
+        if (requestCode == 90011) {
+            val success = resultCode == RESULT_OK
+            if (success) {
+                startSuccess = true
+                UiStore(this).enableVpn = true
+                startClashService()
+            }
+            setStartResult(success)
+        } else {
+            setStartResult(false)
+        }
+    }
+
+    private fun startClashBackground() {
+        val vpnRequest = startClashService()
+
+        try {
+            if (vpnRequest != null) {
+                startSuccess = false
+                startActivityForResult(vpnRequest, 90011)
+            } else {
+                setStartResult(true)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            setStartResult(false)
+        }
+    }
+
+    private fun setStartResult(success: Boolean) {
+        setResult(2, Intent().apply {
+            putExtra("success", success)
+        })
+        finish()
+    }
+
+    private fun startClash(): Boolean {
 //        if (currentProfile == null) {
 //            Toast.makeText(this, R.string.no_profile_selected, Toast.LENGTH_LONG).show()
 //            return
@@ -117,9 +179,10 @@ class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
         val vpnRequest = startClashService()
         if (vpnRequest != null) {
             Toast.makeText(this, R.string.unable_to_start_vpn, Toast.LENGTH_LONG).show()
-            return
+            return false
         }
         Toast.makeText(this, R.string.external_control_started, Toast.LENGTH_LONG).show()
+        return true
     }
 
     private fun stopClash() {
