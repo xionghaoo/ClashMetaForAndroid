@@ -76,6 +76,14 @@ class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
                 Toast.makeText(this, R.string.external_control_stopped, Toast.LENGTH_LONG).show()
             }
 
+            Intents.ACTION_START_CLASH_BACKGROUND -> {
+                val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
+                if (!isRunning) {
+                    startClash()
+                } else {
+                    Toast.makeText(this, R.string.external_control_started, Toast.LENGTH_LONG).show()
+                }
+            }
             Intents.ACTION_STOP_CLASH_BACKGROUND -> {
                 val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
                 if (isRunning) {

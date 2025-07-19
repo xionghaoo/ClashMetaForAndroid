@@ -6,6 +6,7 @@ object Intents {
     // Public
     val ACTION_PROVIDE_URL = "$packageName.action.PROVIDE_URL"
     val ACTION_START_CLASH = "$packageName.action.START_CLASH"
+    val ACTION_START_CLASH_BACKGROUND = "$packageName.action.START_CLASH_BACKGROUND"
     val ACTION_STOP_CLASH = "$packageName.action.STOP_CLASH"
     val ACTION_STOP_CLASH_BACKGROUND = "$packageName.action.STOP_CLASH_BACKGROUND"
     val ACTION_STATUS = "$packageName.action.STATUS"
