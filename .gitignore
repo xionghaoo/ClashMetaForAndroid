@@ -67,4 +67,6 @@ google-services.json
 
 app/meta
 
+!clash.jks
+
 
