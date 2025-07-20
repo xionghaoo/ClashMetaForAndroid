@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.store.UiStore
+import com.github.kr328.clash.service.util.notifyLauncher
 
 class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
 
@@ -72,9 +73,6 @@ class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
             else {
                 Toast.makeText(this, R.string.external_control_stopped, Toast.LENGTH_LONG).show()
             }
-//            Intents.ACTION_START_CLASH_BACKGROUND -> {
-//
-//            }
             Intents.ACTION_STOP_CLASH_BACKGROUND -> {
                 val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
                 val result = if (isRunning) {
@@ -90,6 +88,7 @@ class ExternalControlActivity : Activity(), CoroutineScope by MainScope() {
             }
             Intents.ACTION_STATUS -> {
                 val isRunning = StatusClient(this@ExternalControlActivity).isRunning()
+                notifyLauncher(isRunning)
                 setResult(1, Intent().apply {
                     putExtra("clashRunning", isRunning)
                 })
